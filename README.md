@@ -1,2 +1,2 @@
-# ExpenseTracker
+# Expense Tracker
 WIP
