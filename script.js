@@ -1,4 +1,4 @@
-```javascript
+javascript
 "use strict";
 
 const STORAGE_KEY = "expense-tracker-expenses";
@@ -394,4 +394,3 @@ function getToday() {
 
     return `${year}-${month}-${day}`;
 }
-```
