@@ -1,0 +1,2029 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="description"
+        content="A modern personal expense tracking dashboard."
+    >
+
+    <title>Spendly — Expense Tracker</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <style>
+        /* =====================================================
+           RESET
+        ===================================================== */
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #07070b;
+            --surface: rgba(17, 17, 24, 0.72);
+            --border: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.16);
+
+            --text: #f5f5f7;
+            --muted: #858592;
+            --muted-light: #a9a9b4;
+
+            --purple: #8b5cf6;
+            --purple-bright: #a78bfa;
+            --cyan: #22d3ee;
+            --pink: #ec4899;
+
+            --danger: #fb7185;
+
+            --radius: 20px;
+
+            --font:
+                "Manrope",
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            --mono:
+                "DM Mono",
+                monospace;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+
+            background:
+                radial-gradient(
+                    circle at 15% 10%,
+                    rgba(139, 92, 246, 0.07),
+                    transparent 30%
+                ),
+                var(--bg);
+
+            color: var(--text);
+            font-family: var(--font);
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+
+        /* =====================================================
+           BACKGROUND
+        ===================================================== */
+
+        .background {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .grid {
+            position: absolute;
+            inset: 0;
+
+            opacity: 0.18;
+
+            background-image:
+                linear-gradient(
+                    rgba(255, 255, 255, 0.025) 1px,
+                    transparent 1px
+                ),
+                linear-gradient(
+                    90deg,
+                    rgba(255, 255, 255, 0.025) 1px,
+                    transparent 1px
+                );
+
+            background-size: 60px 60px;
+
+            mask-image:
+                linear-gradient(
+                    to bottom,
+                    black,
+                    transparent 80%
+                );
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.14;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        .orb-one {
+            width: 450px;
+            height: 450px;
+            top: -200px;
+            right: 5%;
+            background: var(--purple);
+        }
+
+        .orb-two {
+            width: 350px;
+            height: 350px;
+            top: 45%;
+            left: -200px;
+            background: var(--cyan);
+            animation-delay: -5s;
+        }
+
+        .orb-three {
+            width: 300px;
+            height: 300px;
+            bottom: -150px;
+            right: 15%;
+            background: var(--pink);
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translate(0, 0);
+            }
+
+            50% {
+                transform: translate(30px, -40px);
+            }
+        }
+
+
+        /* =====================================================
+           ACCESSIBILITY
+        ===================================================== */
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+
+        /* =====================================================
+           APP
+        ===================================================== */
+
+        .app {
+            display: grid;
+            grid-template-columns: 235px minmax(0, 1fr);
+            min-height: 100vh;
+        }
+
+
+        /* =====================================================
+           SIDEBAR
+        ===================================================== */
+
+        .sidebar {
+            position: sticky;
+            top: 0;
+
+            display: flex;
+            flex-direction: column;
+
+            height: 100vh;
+            padding: 30px 20px;
+
+            border-right: 1px solid var(--border);
+
+            background:
+                linear-gradient(
+                    180deg,
+                    rgba(15, 15, 22, 0.9),
+                    rgba(7, 7, 11, 0.7)
+                );
+
+            backdrop-filter: blur(20px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+
+            margin-bottom: 65px;
+            padding: 0 7px;
+        }
+
+        .brand-mark {
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+
+            width: 27px;
+            height: 27px;
+
+            padding: 5px;
+
+            border-radius: 8px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    var(--purple),
+                    var(--cyan)
+                );
+
+            box-shadow:
+                0 0 25px rgba(139, 92, 246, 0.35);
+        }
+
+        .brand-mark span {
+            flex: 1;
+            border-radius: 3px;
+            background: white;
+        }
+
+        .brand-mark span:nth-child(1) {
+            height: 35%;
+        }
+
+        .brand-mark span:nth-child(2) {
+            height: 65%;
+        }
+
+        .brand-mark span:nth-child(3) {
+            height: 100%;
+        }
+
+        .brand strong {
+            display: block;
+            font-size: 1rem;
+            letter-spacing: -0.03em;
+        }
+
+        .brand small {
+            display: block;
+            margin-top: -2px;
+
+            color: var(--muted);
+
+            font-size: 0.55rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+
+        /* Navigation */
+
+        .navigation {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .nav-item {
+            position: relative;
+
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            padding: 12px;
+
+            border-radius: 10px;
+
+            color: var(--muted);
+
+            text-decoration: none;
+
+            font-size: 0.82rem;
+            font-weight: 600;
+
+            transition:
+                color 0.2s,
+                background 0.2s,
+                transform 0.2s;
+        }
+
+        .nav-item:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.045);
+            transform: translateX(2px);
+        }
+
+        .nav-item.active {
+            color: white;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(139, 92, 246, 0.18),
+                    rgba(139, 92, 246, 0.04)
+                );
+        }
+
+        .nav-item.active::before {
+            content: "";
+
+            position: absolute;
+            left: 0;
+
+            width: 2px;
+            height: 18px;
+
+            border-radius: 2px;
+
+            background: var(--purple-bright);
+
+            box-shadow:
+                0 0 10px var(--purple);
+        }
+
+        .nav-icon {
+            display: grid;
+
+            width: 23px;
+            height: 23px;
+
+            place-items: center;
+
+            font-size: 1rem;
+        }
+
+
+        /* Sidebar bottom */
+
+        .sidebar-bottom {
+            margin-top: auto;
+        }
+
+        .tip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            padding: 13px;
+
+            border: 1px solid var(--border);
+            border-radius: 12px;
+
+            background: rgba(255, 255, 255, 0.045);
+        }
+
+        .tip-icon {
+            display: grid;
+
+            width: 27px;
+            height: 27px;
+
+            place-items: center;
+
+            border-radius: 8px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(139, 92, 246, 0.3),
+                    rgba(34, 211, 238, 0.2)
+                );
+
+            color: var(--purple-bright);
+        }
+
+        .tip strong {
+            display: block;
+            font-size: 0.68rem;
+        }
+
+        .tip p {
+            color: var(--muted);
+            font-size: 0.6rem;
+        }
+
+        .version {
+            display: flex;
+            justify-content: space-between;
+
+            margin-top: 20px;
+            padding: 0 5px;
+
+            color: #484850;
+
+            font-family: var(--mono);
+            font-size: 0.5rem;
+            letter-spacing: 0.08em;
+        }
+
+
+        /* =====================================================
+           MAIN CONTENT
+        ===================================================== */
+
+        .content {
+            width: min(100%, 1250px);
+
+            margin: 0 auto;
+
+            padding: 55px clamp(25px, 5vw, 70px) 35px;
+        }
+
+
+        /* =====================================================
+           TOP BAR
+        ===================================================== */
+
+        .topbar {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+
+            gap: 30px;
+            margin-bottom: 35px;
+        }
+
+        .eyebrow {
+            margin-bottom: 7px;
+
+            color: var(--purple-bright);
+
+            font-family: var(--mono);
+
+            font-size: 0.58rem;
+            letter-spacing: 0.16em;
+            font-weight: 500;
+        }
+
+        .topbar h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            line-height: 1.05;
+
+            letter-spacing: -0.055em;
+        }
+
+        .topbar h1 span {
+            color: transparent;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    var(--purple-bright),
+                    var(--cyan)
+                );
+
+            background-clip: text;
+            -webkit-background-clip: text;
+        }
+
+        .date-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            padding: 8px 12px;
+
+            border: 1px solid var(--border);
+            border-radius: 30px;
+
+            background: rgba(255, 255, 255, 0.025);
+
+            color: var(--muted);
+
+            font-family: var(--mono);
+            font-size: 0.58rem;
+
+            white-space: nowrap;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+
+            border-radius: 50%;
+
+            background: #4ade80;
+
+            box-shadow:
+                0 0 10px #4ade80;
+
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+
+        /* =====================================================
+           SUMMARY CARDS
+        ===================================================== */
+
+        .summary {
+            display: grid;
+
+            grid-template-columns: 1.5fr 1fr 1fr;
+
+            gap: 14px;
+
+            margin-bottom: 18px;
+        }
+
+        .stat-card {
+            position: relative;
+
+            min-height: 170px;
+
+            overflow: hidden;
+
+            padding: 22px;
+
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(255, 255, 255, 0.055),
+                    rgba(255, 255, 255, 0.018)
+                );
+
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.3);
+
+            backdrop-filter: blur(15px);
+
+            transition:
+                transform 0.25s,
+                border-color 0.25s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-hover);
+        }
+
+        .stat-card::after {
+            content: "";
+
+            position: absolute;
+
+            right: -70px;
+            bottom: -100px;
+
+            width: 220px;
+            height: 220px;
+
+            border-radius: 50%;
+
+            opacity: 0.1;
+
+            filter: blur(40px);
+        }
+
+        .total-card::after {
+            background: var(--purple);
+        }
+
+        .count-card::after {
+            background: var(--cyan);
+        }
+
+        .average-card::after {
+            background: var(--pink);
+        }
+
+        .card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-label {
+            color: var(--muted);
+
+            font-family: var(--mono);
+
+            font-size: 0.58rem;
+            letter-spacing: 0.1em;
+        }
+
+        .card-symbol {
+            display: grid;
+
+            width: 28px;
+            height: 28px;
+
+            place-items: center;
+
+            border: 1px solid var(--border);
+            border-radius: 8px;
+
+            color: var(--muted-light);
+
+            font-family: var(--mono);
+            font-size: 0.75rem;
+        }
+
+        .stat-value {
+            position: relative;
+            z-index: 1;
+
+            margin-top: 18px;
+
+            font-size: clamp(1.8rem, 4vw, 2.55rem);
+            font-weight: 700;
+
+            letter-spacing: -0.06em;
+        }
+
+        .total-card .stat-value {
+            text-shadow:
+                0 0 30px rgba(167, 139, 250, 0.2);
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            margin-top: 15px;
+
+            color: #676771;
+
+            font-family: var(--mono);
+            font-size: 0.55rem;
+        }
+
+        .mini-line {
+            display: inline-block;
+
+            width: 20px;
+            height: 2px;
+
+            border-radius: 2px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    var(--purple),
+                    var(--cyan)
+                );
+        }
+
+        .mini-dots {
+            color: var(--cyan);
+            letter-spacing: 2px;
+        }
+
+
+        /* =====================================================
+           PANELS
+        ===================================================== */
+
+        .panel {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+
+            background:
+                linear-gradient(
+                    145deg,
+                    rgba(20, 20, 28, 0.82),
+                    rgba(12, 12, 17, 0.7)
+                );
+
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.3);
+
+            backdrop-filter: blur(18px);
+        }
+
+
+        /* =====================================================
+           ADD EXPENSE
+        ===================================================== */
+
+        .add-section {
+            margin-bottom: 18px;
+            padding: 25px;
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            margin-bottom: 22px;
+        }
+
+        .heading-icon {
+            display: grid;
+
+            width: 36px;
+            height: 36px;
+
+            place-items: center;
+
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            border-radius: 10px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    rgba(139, 92, 246, 0.18),
+                    rgba(34, 211, 238, 0.08)
+                );
+
+            color: var(--purple-bright);
+
+            font-size: 1.2rem;
+        }
+
+        .list-icon {
+            color: var(--cyan);
+            border-color: rgba(34, 211, 238, 0.2);
+            background: rgba(34, 211, 238, 0.06);
+        }
+
+        .section-heading .eyebrow {
+            margin-bottom: 1px;
+        }
+
+        .section-heading h2 {
+            font-size: 1rem;
+            letter-spacing: -0.025em;
+        }
+
+
+        /* Form */
+
+        #expense-form {
+            display: grid;
+
+            grid-template-columns:
+                2fr
+                1fr
+                1.2fr
+                1.1fr
+                auto;
+
+            gap: 10px;
+
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+
+            gap: 7px;
+
+            min-width: 0;
+        }
+
+        .form-group label {
+            color: #696973;
+
+            font-family: var(--mono);
+
+            font-size: 0.53rem;
+            letter-spacing: 0.1em;
+        }
+
+        input,
+        select,
+        button {
+            min-height: 44px;
+
+            font-family: var(--font);
+            font-size: 0.72rem;
+        }
+
+        input,
+        select {
+            width: 100%;
+
+            padding: 10px 12px;
+
+            border: 1px solid var(--border);
+            border-radius: 10px;
+
+            outline: none;
+
+            background: rgba(255, 255, 255, 0.035);
+
+            color: var(--text);
+
+            transition:
+                border-color 0.2s,
+                background 0.2s,
+                box-shadow 0.2s;
+        }
+
+        input::placeholder {
+            color: #52525b;
+        }
+
+        input:hover,
+        select:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--border-hover);
+        }
+
+        input:focus,
+        select:focus {
+            border-color:
+                rgba(139, 92, 246, 0.65);
+
+            background:
+                rgba(139, 92, 246, 0.04);
+
+            box-shadow:
+                0 0 0 3px rgba(139, 92, 246, 0.08);
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        select option {
+            background: #15151c;
+            color: white;
+        }
+
+        .input-prefix {
+            position: relative;
+        }
+
+        .input-prefix span {
+            position: absolute;
+
+            left: 12px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            color: var(--purple-bright);
+
+            font-family: var(--mono);
+            font-size: 0.7rem;
+
+            pointer-events: none;
+        }
+
+        .input-prefix input {
+            padding-left: 27px;
+        }
+
+
+        /* Add button */
+
+        .add-button {
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 15px;
+
+            min-width: 125px;
+
+            padding: 10px 12px 10px 15px;
+
+            border: 0;
+            border-radius: 10px;
+
+            background:
+                linear-gradient(
+                    110deg,
+                    var(--purple),
+                    #6d5ce7
+                );
+
+            color: white;
+
+            cursor: pointer;
+
+            font-size: 0.68rem;
+            font-weight: 700;
+
+            box-shadow:
+                0 8px 25px rgba(139, 92, 246, 0.18);
+
+            transition:
+                transform 0.2s,
+                box-shadow 0.2s,
+                filter 0.2s;
+        }
+
+        .add-button strong {
+            display: grid;
+
+            width: 24px;
+            height: 24px;
+
+            place-items: center;
+
+            border-radius: 7px;
+
+            background: rgba(255, 255, 255, 0.14);
+        }
+
+        .add-button:hover {
+            transform: translateY(-2px);
+
+            filter: brightness(1.08);
+
+            box-shadow:
+                0 12px 30px rgba(139, 92, 246, 0.28);
+        }
+
+        .add-button:active {
+            transform: translateY(0);
+        }
+
+
+        /* =====================================================
+           expenses
+        ===================================================== */
+
+        .expenses-section {
+            padding: 25px;
+        }
+
+        .expenses-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            gap: 20px;
+        }
+
+        .expenses-header .section-heading {
+            margin-bottom: 0;
+        }
+
+        .clear-button {
+            min-height: 34px;
+
+            padding: 7px 11px;
+
+            border: 1px solid rgba(251, 113, 133, 0.18);
+            border-radius: 8px;
+
+            background: rgba(251, 113, 133, 0.05);
+
+            color: #9f626d;
+
+            cursor: pointer;
+
+            font-size: 0.58rem;
+
+            transition:
+                background 0.2s,
+                color 0.2s,
+                border-color 0.2s;
+        }
+
+        .clear-button:hover {
+            border-color: rgba(251, 113, 133, 0.4);
+
+            background:
+                rgba(251, 113, 133, 0.1);
+
+            color: var(--danger);
+        }
+
+
+        /* filters */
+
+        .filters {
+            display: grid;
+
+            grid-template-columns: 1fr 190px;
+
+            gap: 10px;
+
+            margin: 25px 0 14px;
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-icon {
+            position: absolute;
+
+            left: 13px;
+            top: 50%;
+
+            transform: translateY(-52%);
+
+            color: #5c5c66;
+
+            font-size: 1.1rem;
+
+            pointer-events: none;
+        }
+
+        .search-wrapper input {
+            padding-left: 38px;
+        }
+
+
+        /* =====================================================
+           expense list
+        ===================================================== */
+
+        .expense-list {
+            overflow: hidden;
+
+            border: 1px solid var(--border);
+            border-radius: 12px;
+
+            background:
+                rgba(0, 0, 0, 0.12);
+        }
+
+        .expense {
+            position: relative;
+
+            display: grid;
+
+            grid-template-columns:
+                minmax(180px, 2fr)
+                1fr
+                1fr
+                1fr
+                auto;
+
+            align-items: center;
+
+            gap: 15px;
+
+            min-height: 67px;
+
+            padding: 10px 15px;
+
+            border-bottom:
+                1px solid rgba(255, 255, 255, 0.045);
+
+            transition:
+                background 0.2s,
+                padding 0.2s;
+        }
+
+        .expense:last-child {
+            border-bottom: 0;
+        }
+
+        .expense:hover {
+            padding-left: 20px;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(139, 92, 246, 0.06),
+                    transparent
+                );
+        }
+
+        .expense-description {
+            overflow: hidden;
+
+            color: #ededf0;
+
+            font-size: 0.72rem;
+            font-weight: 600;
+
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .expense-description::before {
+            content: "•";
+
+            display: inline-block;
+
+            margin-right: 9px;
+
+            color: var(--purple-bright);
+
+            font-size: 1rem;
+
+            vertical-align: -1px;
+        }
+
+        .expense-category {
+            display: inline-flex;
+
+            width: fit-content;
+
+            padding: 5px 8px;
+
+            border: 1px solid var(--border);
+            border-radius: 6px;
+
+            background:
+                rgba(255, 255, 255, 0.025);
+
+            color: #8f8f99;
+
+            font-family: var(--mono);
+
+            font-size: 0.52rem;
+        }
+
+        .expense-date {
+            color: #65656e;
+
+            font-family: var(--mono);
+
+            font-size: 0.56rem;
+        }
+
+        .expense-amount {
+            color: #e6e6ea;
+
+            font-family: var(--mono);
+
+            font-size: 0.67rem;
+            font-weight: 500;
+
+            text-align: right;
+        }
+
+        .delete-button {
+            min-height: 30px;
+
+            padding: 5px 9px;
+
+            border: 1px solid transparent;
+            border-radius: 7px;
+
+            background: transparent;
+
+            color: #5d5d67;
+
+            cursor: pointer;
+
+            font-size: 0.55rem;
+
+            transition:
+                color 0.2s,
+                background 0.2s,
+                border-color 0.2s;
+        }
+
+        .delete-button:hover {
+            border-color:
+                rgba(251, 113, 133, 0.2);
+
+            background:
+                rgba(251, 113, 133, 0.08);
+
+            color: var(--danger);
+        }
+
+
+        /* empty state */
+
+        .empty {
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+            justify-content: center;
+
+            min-height: 180px;
+
+            padding: 30px;
+
+            color: #55555f;
+
+            font-family: var(--mono);
+
+            font-size: 0.65rem;
+
+            text-align: center;
+        }
+
+        .empty::before {
+            content: "∅";
+
+            display: grid;
+
+            width: 40px;
+            height: 40px;
+
+            margin-bottom: 12px;
+
+            place-items: center;
+
+            border: 1px dashed #36363f;
+
+            border-radius: 50%;
+
+            color: #494952;
+
+            font-size: 1rem;
+        }
+
+
+        /* =====================================================
+           footer
+        ===================================================== */
+
+        .footer {
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            gap: 9px;
+
+            padding: 28px 0 5px;
+
+            color: #414149;
+
+            font-family: var(--mono);
+
+            font-size: 0.5rem;
+
+            letter-spacing: 0.05em;
+
+            text-align: center;
+        }
+
+        .footer > span:first-child {
+            color: #60606a;
+            font-weight: 500;
+        }
+
+        .footer-dot {
+            color: var(--purple);
+            font-size: 0.8rem;
+        }
+
+
+        /* =====================================================
+           tablet
+        ===================================================== */
+
+        @media (max-width: 1050px) {
+
+            .app {
+                grid-template-columns: 75px minmax(0, 1fr);
+            }
+
+            .sidebar {
+                align-items: center;
+                padding: 25px 12px;
+            }
+
+            .brand {
+                margin-bottom: 55px;
+            }
+
+            .brand > div:last-child,
+            .nav-item span:last-child,
+            .tip,
+            .version {
+                display: none;
+            }
+
+            .brand {
+                padding: 0;
+            }
+
+            .navigation {
+                width: 100%;
+            }
+
+            .nav-item {
+                justify-content: center;
+            }
+
+            #expense-form {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+
+            .description-field {
+                grid-column: span 2;
+            }
+
+            .add-button {
+                width: 100%;
+            }
+        }
+
+
+        /* =====================================================
+           mobile
+        ===================================================== */
+
+        @media (max-width: 700px) {
+
+            .app {
+                display: block;
+            }
+
+            .sidebar {
+                position: relative;
+
+                display: flex;
+                flex-direction: row;
+
+                align-items: center;
+                justify-content: space-between;
+
+                width: 100%;
+                height: auto;
+
+                padding: 15px 18px;
+
+                border-right: 0;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .brand {
+                margin: 0;
+            }
+
+            .navigation {
+                display: flex;
+                flex-direction: row;
+
+                width: auto;
+
+                gap: 2px;
+            }
+
+            .nav-item {
+                width: 40px;
+                height: 40px;
+
+                padding: 5px;
+            }
+
+            .nav-item.active::before {
+                top: auto;
+                left: 50%;
+                bottom: 2px;
+
+                width: 16px;
+                height: 2px;
+
+                transform: translateX(-50%);
+            }
+
+            .content {
+                padding: 35px 15px 25px;
+            }
+
+            .topbar {
+                align-items: flex-start;
+                flex-direction: column;
+
+                margin-bottom: 25px;
+            }
+
+            .topbar h1 {
+                font-size: 2rem;
+            }
+
+            .date-badge {
+                align-self: flex-start;
+            }
+
+            .summary {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-card {
+                min-height: 135px;
+            }
+
+            #expense-form {
+                grid-template-columns: 1fr;
+            }
+
+            .description-field {
+                grid-column: auto;
+            }
+
+            .add-section,
+            .expenses-section {
+                padding: 18px;
+            }
+
+            .filters {
+                grid-template-columns: 1fr;
+            }
+
+            .expenses-header {
+                align-items: flex-start;
+            }
+
+            .expense {
+                grid-template-columns: 1fr auto;
+
+                gap: 4px 10px;
+
+                padding: 14px;
+            }
+
+            .expense:hover {
+                padding-left: 14px;
+            }
+
+            .expense-description {
+                grid-column: 1;
+            }
+
+            .expense-category {
+                grid-column: 1;
+            }
+
+            .expense-date {
+                grid-column: 1;
+            }
+
+            .expense-amount {
+                grid-column: 1;
+
+                text-align: left;
+            }
+
+            .delete-button {
+                grid-column: 2;
+                grid-row: 1 / span 4;
+
+                align-self: center;
+            }
+
+            .footer {
+                flex-wrap: wrap;
+            }
+        }
+
+
+        /* =====================================================
+           reduced motion
+        ===================================================== */
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <!-- animated background -->
+
+    <div class="background">
+        <div class="orb orb-one"></div>
+        <div class="orb orb-two"></div>
+        <div class="orb orb-three"></div>
+        <div class="grid"></div>
+    </div>
+
+
+    <main class="app">
+
+        <!-- =========================
+             sidebar
+        ========================== -->
+
+        <aside class="sidebar">
+
+            <div class="brand">
+
+                <div class="brand-mark">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <div>
+                    <strong>spendly</strong>
+                    <small>personal finance</small>
+                </div>
+
+            </div>
+
+
+            <nav class="navigation">
+
+                <a
+                    class="nav-item active"
+                    href="#dashboard"
+                >
+                    <span class="nav-icon">⌂</span>
+                    <span>Dashboard</span>
+                </a>
+
+                <a
+                    class="nav-item"
+                    href="#expenses"
+                >
+                    <span class="nav-icon">◫</span>
+                    <span>Expenses</span>
+                </a>
+
+                <a
+                    class="nav-item"
+                    href="#add"
+                >
+                    <span class="nav-icon">＋</span>
+                    <span>Add expense</span>
+                </a>
+
+            </nav>
+
+
+            <div class="sidebar-bottom">
+
+                <div class="tip">
+
+                    <span class="tip-icon">✦</span>
+
+                    <div>
+                        <strong>Small steps.</strong>
+                        <p>Big difference.</p>
+                    </div>
+
+                </div>
+
+
+                <div class="version">
+                    <span>SPENDLY</span>
+                    <span>v1.0</span>
+                </div>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =========================
+             main
+        ========================== -->
+
+        <section
+            class="content"
+            id="dashboard"
+        >
+
+            <!-- header -->
+
+            <header class="topbar">
+
+                <div>
+                    <p class="eyebrow">
+                        PERSONAL FINANCE
+                    </p>
+
+                    <h1>
+                        Your money,
+                        <span>decoded.</span>
+                    </h1>
+                </div>
+
+
+                <div class="date-badge">
+                    <span class="status-dot"></span>
+                    <span>Tracking locally</span>
+                </div>
+
+            </header>
+
+
+            <!-- =========================
+                 summary
+            ========================== -->
+
+            <section class="summary">
+
+                <article class="stat-card total-card">
+
+                    <div class="card-top">
+                        <span class="card-label">
+                            TOTAL SPENT
+                        </span>
+
+                        <span class="card-symbol">
+                            ↗
+                        </span>
+                    </div>
+
+                    <div
+                        class="stat-value"
+                        id="total"
+                    >
+                        $0.00
+                    </div>
+
+                    <div class="card-footer">
+                        <span class="mini-line"></span>
+                        <span>Across all expenses</span>
+                    </div>
+
+                </article>
+
+
+                <article class="stat-card count-card">
+
+                    <div class="card-top">
+                        <span class="card-label">
+                            TRANSACTIONS
+                        </span>
+
+                        <span class="card-symbol">
+                            #
+                        </span>
+                    </div>
+
+                    <div
+                        class="stat-value"
+                        id="count"
+                    >
+                        0
+                    </div>
+
+                    <div class="card-footer">
+                        <span class="mini-dots">•••</span>
+                        <span>Recorded expenses</span>
+                    </div>
+
+                </article>
+
+
+                <article class="stat-card average-card">
+
+                    <div class="card-top">
+                        <span class="card-label">
+                            AVERAGE
+                        </span>
+
+                        <span class="card-symbol">
+                            ≈
+                        </span>
+                    </div>
+
+                    <div
+                        class="stat-value"
+                        id="average"
+                    >
+                        $0.00
+                    </div>
+
+                    <div class="card-footer">
+                        <span class="mini-line"></span>
+                        <span>Per transaction</span>
+                    </div>
+
+                </article>
+
+            </section>
+
+
+            <!-- =========================
+                 adding expenses
+            ========================== -->
+
+            <section
+                class="add-section panel"
+                id="add"
+            >
+
+                <div class="section-heading">
+
+                    <div class="heading-icon">
+                        +
+                    </div>
+
+                    <div>
+                        <p class="eyebrow">
+                            NEW TRANSACTION
+                        </p>
+
+                        <h2>
+                            Add an expense
+                        </h2>
+                    </div>
+
+                </div>
+
+
+                <form
+                    id="expense-form"
+                    novalidate
+                >
+
+                    <div
+                        class="form-group description-field"
+                    >
+
+                        <label for="description">
+                            WHAT DID YOU BUY?
+                        </label>
+
+                        <input
+                            id="description"
+                            name="description"
+                            type="text"
+                            placeholder="Coffee, groceries, concert..."
+                            maxlength="100"
+                            autocomplete="off"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="amount">
+                            AMOUNT
+                        </label>
+
+                        <div class="input-prefix">
+
+                            <span>$</span>
+
+                            <input
+                                id="amount"
+                                name="amount"
+                                type="number"
+                                placeholder="0.00"
+                                min="0.01"
+                                max="100000000"
+                                step="0.01"
+                                inputmode="decimal"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="category">
+                            CATEGORY
+                        </label>
+
+                        <select
+                            id="category"
+                            name="category"
+                        >
+                            <option value="Food">
+                                🍜 Food
+                            </option>
+
+                            <option value="Transport">
+                                🚇 Transport
+                            </option>
+
+                            <option value="Entertainment">
+                                ◉ Entertainment
+                            </option>
+
+                            <option value="Shopping">
+                                ◇ Shopping
+                            </option>
+
+                            <option value="Bills">
+                                ▣ Bills
+                            </option>
+
+                            <option value="Other">
+                                ✦ Other
+                            </option>
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="date">
+                            DATE
+                        </label>
+
+                        <input
+                            id="date"
+                            name="date"
+                            type="date"
+                            required
+                        >
+
+                    </div>
+
+
+                    <button
+                        class="add-button"
+                        type="submit"
+                    >
+                        <span>Add expense</span>
+
+                        <strong>
+                            ↗
+                        </strong>
+                    </button>
+
+                </form>
+
+            </section>
+
+
+            <!-- =========================
+                 expense list
+            ========================== -->
+
+            <section
+                class="expenses-section panel"
+                id="expenses"
+            >
+
+                <div class="expenses-header">
+
+                    <div class="section-heading">
+
+                        <div
+                            class="heading-icon list-icon"
+                        >
+                            ≡
+                        </div>
+
+                        <div>
+                            <p class="eyebrow">
+                                ACTIVITY
+                            </p>
+
+                            <h2>
+                                Recent expenses
+                            </h2>
+                        </div>
+
+                    </div>
+
+
+                    <button
+                        id="clear-all"
+                        class="clear-button"
+                        type="button"
+                    >
+                        Clear all
+                    </button>
+
+                </div>
+
+
+                <!-- Filters -->
+
+                <div class="filters">
+
+                    <div class="search-wrapper">
+
+                        <span class="search-icon">
+                            ⌕
+                        </span>
+
+                        <label
+                            class="sr-only"
+                            for="search"
+                        >
+                            Search expenses
+                        </label>
+
+                        <input
+                            id="search"
+                            type="search"
+                            placeholder="Search transactions..."
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+
+                    <label class="category-filter">
+
+                        <span class="sr-only">
+                            Filter by category
+                        </span>
+
+                        <select
+                            id="filter-category"
+                        >
+                            <option value="All">
+                                All categories
+                            </option>
+
+                            <option value="Food">
+                                Food
+                            </option>
+
+                            <option value="Transport">
+                                Transport
+                            </option>
+
+                            <option value="Entertainment">
+                                Entertainment
+                            </option>
+
+                            <option value="Shopping">
+                                Shopping
+                            </option>
+
+                            <option value="Bills">
+                                Bills
+                            </option>
+
+                            <option value="Other">
+                                Other
+                            </option>
+
+                        </select>
+
+                    </label>
+
+                </div>
+
+
+                <!-- JavaScript renders expenses here -->
+
+                <div
+                    id="expense-list"
+                    class="expense-list"
+                    aria-live="polite"
+                ></div>
+
+            </section>
+
+
+            <!-- Footer -->
+
+            <footer class="footer">
+
+                <span>SPENDLY</span>
+
+                <span class="footer-dot">
+                    •
+                </span>
+
+                <span>
+                    Your data stays in your browser.
+                </span>
+
+            </footer>
+
+        </section>
+
+    </main>
+
+
+    <!-- Keep JavaScript separate -->
+
+    <script
+        src="js/script.js"
+        defer
+    ></script>
+
+</body>
+</html>
+```
